@@ -32,7 +32,7 @@ if uploaded_file is not None:
         st.info("Transcribing video incredibly fast with Groq...")
         
         with open("temp_audio.mp3", "rb") as audio_file:
-            transcription = client.audio.transcriptions.create(
+            transcription = client.audio.translations.create(
                 model="whisper-large-v3-turbo", 
                 file=audio_file,
                 response_format="verbose_json"
