@@ -33,7 +33,7 @@ if uploaded_file is not None:
         
         with open("temp_audio.mp3", "rb") as audio_file:
             transcription = client.audio.translations.create(
-                model="whisper-large-v3-turbo", 
+                model="whisper-large-v3", 
                 file=audio_file,
                 response_format="verbose_json"
             )
