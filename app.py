@@ -40,7 +40,7 @@ if uploaded_file is not None:
         base64_frames = []
         
         # Calculates 5 evenly spaced timestamps
-        timestamps = [video.duration * (i/11) for i in range(1, 11)]
+        timestamps = [video.duration * (i/6) for i in range(1, 6)]
         
         for t in timestamps:
             frame = video.get_frame(t)
