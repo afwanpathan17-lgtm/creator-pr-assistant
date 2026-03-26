@@ -55,7 +55,7 @@ if uploaded_file is not None:
         # --- THE VISION API CALL ---
         st.info("Scanning image for visual policy violations...")
         
-            try:
+        try:
             vision_completion = client.chat.completions.create(
                 messages=[
                     {
@@ -72,7 +72,7 @@ if uploaded_file is not None:
                         ]
                     }
                 ],
-                model="llama-3.2-90b-vision-preview", # <-- Make sure 'model=' is right here!
+                model="llama-3.2-90b-vision-preview",
                 temperature=0.1,
             )
             
@@ -85,8 +85,7 @@ if uploaded_file is not None:
             # If Groq crashes, this prints the exact reason on your screen!
             st.error(f"API Error: {e}")
             st.stop()
-        # -----------------------------
-        # -----------------------------
+        # -----------------------------        # -----------------------------
         # Adds a nice visual dividing line
         # -----------------------------
         # -------------------------
