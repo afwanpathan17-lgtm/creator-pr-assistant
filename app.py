@@ -44,7 +44,7 @@ if uploaded_file is not None:
         for t in timestamps:
             frame = video.get_frame(t)
             img = Image.fromarray(frame)
-            img.thumbnail((400, 400)) # Compress the frames
+            img.thumbnail((200, 200)) # Shrink even more to respect the 1120px width limit
             frames.append(img)
             
         # Stitch all 5 images side-by-side into ONE single image
