@@ -19,14 +19,22 @@ st.write("Upload a draft video to scan for YouTube policy violations and real-wo
 uploaded_file = st.file_uploader("Choose an MP4 video", type=["mp4"])
 
 if uploaded_file is not None:
+    if uploaded_file is not None:
     if st.button("Run Full Scan"):
         
         with open("temp_video.mp4", "wb") as f:
             f.write(uploaded_file.getbuffer())
             
+        # --- THE NEW 60-SECOND GUARDRAIL ---
+        video = VideoFileClip("temp_video.mp4")
+        
+        if video.duration > 60:
+            st.error("⚠️ Video is too long! To ensure lightning-fast analysis and protect against the 60-second Shorts copyright rule, please upload a clip under 1 minute.")
+            st.stop() # This command instantly stops the rest of the code from running!
+        # -----------------------------------
+            
         st.info("Extracting audio...")
         
-        video = VideoFileClip("temp_video.mp4")
         video.audio.write_audiofile("temp_audio.mp3", logger=None)
         
         st.info("Transcribing video incredibly fast with Groq...")
