@@ -39,7 +39,7 @@ if uploaded_file is not None:
         st.info("Slicing video into 5 keyframes for visual analysis...")
         base64_frames = []
         
-        timestamps = [video.duration * (i/5) for i in range(1, 6)]
+        timestamps = [video.duration * (i/6) for i in range(1, 6)]
         
         for t in timestamps:
             frame = video.get_frame(t)
