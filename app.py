@@ -72,7 +72,7 @@ if uploaded_file is not None:
                         ]
                     }
                 ],
-                model="llama-3.2-11b-vision-preview",
+                "llama-4-scout-17b-16e-instruct",
                 temperature=0.1,
             )
             
