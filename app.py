@@ -44,6 +44,11 @@ if uploaded_file is not None:
         for t in timestamps:
             frame = video.get_frame(t)
             img = Image.fromarray(frame)
+            
+            # --- THE MAGIC FIX: Shrink the image so it fits in the API limit ---
+            img.thumbnail((512, 512))
+            # -------------------------------------------------------------------
+            
             buffer = BytesIO()
             img.save(buffer, format="JPEG")
             base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
