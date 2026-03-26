@@ -35,41 +35,52 @@ if uploaded_file is not None:
             st.stop() 
         # -----------------------------------
         
-        # --- THE VISUAL SCANNER (SINGLE FRAME SAFE MODE) ---
-        st.info("Extracting the main keyframe for visual analysis...")
+       # --- THE VISUAL SLICER (MULTI-FRAME UPGRADE) ---
+        st.info("Slicing video into multiple keyframes for a deep scan...")
+        base64_frames = []
         
-        # 1. Grab the exact middle of the video (the 50% mark)
-        t = video.duration / 2
-        frame = video.get_frame(t)
-        img = Image.fromarray(frame)
+        # Calculates 5 evenly spaced timestamps
+        timestamps = [video.duration * (i/6) for i in range(1, 6)]
         
-        # 2. Shrink to a perfectly safe, AI-friendly size
-        img.thumbnail((512, 512)) 
-        
-        buffer = BytesIO()
-        img.save(buffer, format="JPEG")
-        base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        
-        st.success("Successfully captured the keyframe!")
+        for t in timestamps:
+            frame = video.get_frame(t)
+            img = Image.fromarray(frame)
+            
+            # Keep them compressed to 512x512 so we don't break the 4MB payload limit!
+            img.thumbnail((512, 512)) 
+            
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG")
+            base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            base64_frames.append(base64_str)
+            
+        st.success(f"Successfully captured {len(base64_frames)} keyframes!")
         
         # --- THE VISION API CALL ---
-        st.info("Scanning image for visual policy violations...")
+        st.info("Scanning all keyframes for visual policy violations...")
         
         try:
+            # 1. Start with our text instructions
+            vision_content = [
+                {
+                    "type": "text",
+                    "text": "You are a strict YouTube Policy Reviewer. I am providing multiple sequential keyframes from a short-form video. Review them as a timeline for any visual policy violations including: 1) Nudity, 2) Graphic violence, 3) Offensive gestures, 4) Slurs or restricted brand names written on screen. Provide a clear, structured report."
+                }
+            ]
+            
+            # 2. Attach all of our base64 images to the exact same message
+            for b64_img in base64_frames:
+                vision_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{b64_img}"}
+                })
+                
+            # 3. Send the massive package to Llama 4 Scout
             vision_completion = client.chat.completions.create(
                 messages=[
                     {
                         "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": "You are a strict YouTube Policy Reviewer. I am providing a keyframe from a short-form video. Review it for any visual policy violations including: 1) Nudity, 2) Graphic violence, 3) Offensive gestures, 4) Slurs or restricted brand names written on screen. Provide a clear, structured report."
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": f"data:image/jpeg;base64,{base64_str}"}
-                            }
-                        ]
+                        "content": vision_content
                     }
                 ],
                 model="meta-llama/llama-4-scout-17b-16e-instruct",
@@ -82,9 +93,9 @@ if uploaded_file is not None:
             st.markdown("---")
             
         except Exception as e:
-            # If Groq crashes, this prints the exact reason on your screen!
             st.error(f"API Error: {e}")
             st.stop()
+        # -----------------------------
         # -----------------------------        # -----------------------------
         # Adds a nice visual dividing line
         # -----------------------------
