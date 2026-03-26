@@ -34,27 +34,24 @@ if uploaded_file is not None:
             st.error("⚠️ Video is too long! To ensure lightning-fast analysis and protect against the 60-second Shorts copyright rule, please upload a clip under 1 minute.")
             st.stop() 
         # -----------------------------------
-         # --- THE VISUAL SLICER ---
-     st.info("Slicing video into 5 keyframes for visual analysis...")
-     base64_frames = []
-
-     # Calculate 5 evenly spaced timestamps (e.g., 20%, 40%, 60%, 80%, 100% of the video)
-     timestamps = [video.duration * (i/5) for i in range(1, 6)]
-
-     for t in timestamps:
-         # 1. Grab the image at this exact second
-         frame = video.get_frame(t)
-         # 2. Convert it into a workable image file
-         img = Image.fromarray(frame)
-         # 3. Save it to a temporary digital buffer
-         buffer = BytesIO()
-         img.save(buffer, format="JPEG")
-         # 4. Translate it into base64 text
-         base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-         base64_frames.append(base64_str)
-
-     st.success("Successfully captured and translated 5 keyframes!")
-     # -------------------------   
+        
+        # --- THE VISUAL SLICER ---
+        st.info("Slicing video into 5 keyframes for visual analysis...")
+        base64_frames = []
+        
+        timestamps = [video.duration * (i/5) for i in range(1, 6)]
+        
+        for t in timestamps:
+            frame = video.get_frame(t)
+            img = Image.fromarray(frame)
+            buffer = BytesIO()
+            img.save(buffer, format="JPEG")
+            base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            base64_frames.append(base64_str)
+            
+        st.success("Successfully captured and translated 5 keyframes!")
+        # -------------------------
+            
         st.info("Extracting audio...")
         
         video.audio.write_audiofile("temp_audio.mp3", logger=None)
