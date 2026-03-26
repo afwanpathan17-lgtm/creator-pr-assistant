@@ -35,60 +35,65 @@ if uploaded_file is not None:
             st.stop() 
         # -----------------------------------
         
-        # --- THE VISUAL SLICER ---
-        st.info("Slicing video into 5 keyframes for visual analysis...")
-        base64_frames = []
+        # --- THE VISUAL SLICER (THE FILMSTRIP HACK) ---
+        st.info("Slicing video into a 5-frame filmstrip for visual analysis...")
         
         timestamps = [video.duration * (i/6) for i in range(1, 6)]
+        frames = []
         
         for t in timestamps:
             frame = video.get_frame(t)
             img = Image.fromarray(frame)
+            img.thumbnail((400, 400)) # Compress the frames
+            frames.append(img)
             
-            # --- THE MAGIC FIX: Shrink the image so it fits in the API limit ---
-            img.thumbnail((512, 512))
-            # -------------------------------------------------------------------
+        # Stitch all 5 images side-by-side into ONE single image
+        total_width = sum(img.size[0] for img in frames)
+        max_height = max(img.size[1] for img in frames)
+        filmstrip = Image.new('RGB', (total_width, max_height))
+        
+        x_offset = 0
+        for img in frames:
+            filmstrip.paste(img, (x_offset, 0))
+            x_offset += img.size[0]
             
-            buffer = BytesIO()
-            img.save(buffer, format="JPEG")
-            base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-            base64_frames.append(base64_str)
-            
-        st.success("Successfully captured and translated 5 keyframes!")
+        # Translate the single filmstrip into base64
+        buffer = BytesIO()
+        filmstrip.save(buffer, format="JPEG")
+        base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        
+        st.success("Successfully created the Filmstrip!")
+        # -------------------------
+        
         # --- THE VISION AI SCANNER ---
-        st.info("Scanning keyframes for visual policy violations...")
+        st.info("Scanning filmstrip for visual policy violations...")
         
-        # 1. Start with our strict instructions
-        vision_content = [
-            {
-                "type": "text",
-                "text": "You are a strict YouTube Policy Reviewer and PR Manager. I am providing 5 evenly spaced keyframes from a short-form video. Review them for any visual policy violations including: 1) Nudity or sexually explicit content, 2) Graphic violence or gore, 3) Offensive gestures, 4) Slurs, profanity, or restricted brand names written on screen. Provide a clear, structured report of your visual findings."
-            }
-        ]
-        
-        # 2. Attach all 5 of our base64 images to the message
-        for b64_img in base64_frames:
-            vision_content.append({
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{b64_img}"}
-            })
-            
-        # 3. Send the package to the Vision Model
         vision_completion = client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
-                    "content": vision_content
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "You are a strict YouTube Policy Reviewer. I am providing a single 'filmstrip' image containing 5 sequential frames from a short-form video. Review the sequence for any visual policy violations including: 1) Nudity, 2) Graphic violence, 3) Offensive gestures, 4) Slurs or restricted brand names written on screen. Provide a clear, structured report."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{base64_str}"}
+                        }
+                    ]
                 }
             ],
-            model="llama-3.2-11b-vision-preview", # Groq's lightning-fast vision model
+            model="llama-3.2-11b-vision-preview",
             temperature=0.1,
         )
         
         st.success("Visual Scan Complete!")
         st.subheader("👁️ Visual Moderation Report")
         st.write(vision_completion.choices[0].message.content)
-        st.markdown("---") # Adds a nice visual dividing line
+        st.markdown("---")
+        # -----------------------------
+        # Adds a nice visual dividing line
         # -----------------------------
         # -------------------------
             
