@@ -35,63 +35,57 @@ if uploaded_file is not None:
             st.stop() 
         # -----------------------------------
         
-        # --- THE VISUAL SLICER (THE FILMSTRIP HACK) ---
-        st.info("Slicing video into a 5-frame filmstrip for visual analysis...")
+        # --- THE VISUAL SCANNER (SINGLE FRAME SAFE MODE) ---
+        st.info("Extracting the main keyframe for visual analysis...")
         
-        timestamps = [video.duration * (i/6) for i in range(1, 6)]
-        frames = []
+        # 1. Grab the exact middle of the video (the 50% mark)
+        t = video.duration / 2
+        frame = video.get_frame(t)
+        img = Image.fromarray(frame)
         
-        for t in timestamps:
-            frame = video.get_frame(t)
-            img = Image.fromarray(frame)
-            img.thumbnail((200, 200)) # Shrink even more to respect the 1120px width limit
-            frames.append(img)
-            
-        # Stitch all 5 images side-by-side into ONE single image
-        total_width = sum(img.size[0] for img in frames)
-        max_height = max(img.size[1] for img in frames)
-        filmstrip = Image.new('RGB', (total_width, max_height))
+        # 2. Shrink to a perfectly safe, AI-friendly size
+        img.thumbnail((512, 512)) 
         
-        x_offset = 0
-        for img in frames:
-            filmstrip.paste(img, (x_offset, 0))
-            x_offset += img.size[0]
-            
-        # Translate the single filmstrip into base64
         buffer = BytesIO()
-        filmstrip.save(buffer, format="JPEG")
+        img.save(buffer, format="JPEG")
         base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
         
-        st.success("Successfully created the Filmstrip!")
-        # -------------------------
+        st.success("Successfully captured the keyframe!")
         
-        # --- THE VISION AI SCANNER ---
-        st.info("Scanning filmstrip for visual policy violations...")
+        # --- THE VISION API CALL ---
+        st.info("Scanning image for visual policy violations...")
         
-        vision_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "You are a strict YouTube Policy Reviewer. I am providing a single 'filmstrip' image containing 5 sequential frames from a short-form video. Review the sequence for any visual policy violations including: 1) Nudity, 2) Graphic violence, 3) Offensive gestures, 4) Slurs or restricted brand names written on screen. Provide a clear, structured report."
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{base64_str}"}
-                        }
-                    ]
-                }
-            ],
-            model="llama-3.2-11b-vision-preview",
-            temperature=0.1,
-        )
-        
-        st.success("Visual Scan Complete!")
-        st.subheader("👁️ Visual Moderation Report")
-        st.write(vision_completion.choices[0].message.content)
-        st.markdown("---")
+        try:
+            vision_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "You are a strict YouTube Policy Reviewer. I am providing a keyframe from a short-form video. Review it for any visual policy violations including: 1) Nudity, 2) Graphic violence, 3) Offensive gestures, 4) Slurs or restricted brand names written on screen. Provide a clear, structured report."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"data:image/jpeg;base64,{base64_str}"}
+                            }
+                        ]
+                    }
+                ],
+                model="llama-3.2-11b-vision-preview",
+                temperature=0.1,
+            )
+            
+            st.success("Visual Scan Complete!")
+            st.subheader("👁️ Visual Moderation Report")
+            st.write(vision_completion.choices[0].message.content)
+            st.markdown("---")
+            
+        except Exception as e:
+            # If Groq crashes, this prints the exact reason on your screen!
+            st.error(f"API Error: {e}")
+            st.stop()
+        # -----------------------------
         # -----------------------------
         # Adds a nice visual dividing line
         # -----------------------------
