@@ -55,7 +55,7 @@ if uploaded_file is not None:
         # --- THE VISION API CALL ---
         st.info("Scanning image for visual policy violations...")
         
-        try:
+            try:
             vision_completion = client.chat.completions.create(
                 messages=[
                     {
@@ -72,7 +72,7 @@ if uploaded_file is not None:
                         ]
                     }
                 ],
-                "llama-4-scout-17b-16e-instruct",
+                model="llama-3.2-90b-vision-preview", # <-- Make sure 'model=' is right here!
                 temperature=0.1,
             )
             
