@@ -50,6 +50,41 @@ if uploaded_file is not None:
             base64_frames.append(base64_str)
             
         st.success("Successfully captured and translated 5 keyframes!")
+        # --- THE VISION AI SCANNER ---
+        st.info("Scanning keyframes for visual policy violations...")
+        
+        # 1. Start with our strict instructions
+        vision_content = [
+            {
+                "type": "text",
+                "text": "You are a strict YouTube Policy Reviewer and PR Manager. I am providing 5 evenly spaced keyframes from a short-form video. Review them for any visual policy violations including: 1) Nudity or sexually explicit content, 2) Graphic violence or gore, 3) Offensive gestures, 4) Slurs, profanity, or restricted brand names written on screen. Provide a clear, structured report of your visual findings."
+            }
+        ]
+        
+        # 2. Attach all 5 of our base64 images to the message
+        for b64_img in base64_frames:
+            vision_content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{b64_img}"}
+            })
+            
+        # 3. Send the package to the Vision Model
+        vision_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": vision_content
+                }
+            ],
+            model="llama-3.2-11b-vision-preview", # Groq's lightning-fast vision model
+            temperature=0.1,
+        )
+        
+        st.success("Visual Scan Complete!")
+        st.subheader("👁️ Visual Moderation Report")
+        st.write(vision_completion.choices[0].message.content)
+        st.markdown("---") # Adds a nice visual dividing line
+        # -----------------------------
         # -------------------------
             
         st.info("Extracting audio...")
