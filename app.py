@@ -1,6 +1,9 @@
 import streamlit as st
 from moviepy.editor import VideoFileClip
 from groq import Groq
+import base64
+from io import BytesIO
+from PIL import Image
 
 # --- CONFIGURATION (THE SECRETS SAFE) ---
 # The app will now look for the key inside Streamlit's secure server settings!
