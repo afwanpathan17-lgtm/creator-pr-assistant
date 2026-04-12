@@ -65,7 +65,7 @@ graph TD;
 
 **1. Clone the repository:**
 ```bash
-git clone https://github.com/Afwan-Insights/trustscout-ai.git
+https://github.com/Afwan-Insights/trustscout-ai.git
 ```
 
 **2. Install dependencies:**
