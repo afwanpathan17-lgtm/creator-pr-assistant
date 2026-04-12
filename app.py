@@ -164,7 +164,13 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             st.error(f"Audio API Error: {e}")
             st.stop()
         
-        # --- THE ENTERPRISE UI/UX DASHBOARD ---        
+# --- THE ENTERPRISE UI/UX DASHBOARD ---
+        st.markdown("---")
+        st.header("📊 Final Moderation Audit")
+        
+        # THIS IS THE LINE THAT WENT MISSING!
+        col1, col2 = st.columns(2)
+        
         with col1:
             st.success("✅ Visual Scan Complete")
             st.subheader("👁️ Visual Report")
