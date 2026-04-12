@@ -9,13 +9,13 @@ import re
 from fpdf import FPDF
 
 # --- THE UI/UX HERO SECTION ---
-st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="TrustScout.ai", page_icon="🛡️", layout="wide")
 
 # --- CONFIGURATION ---
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-st.title("🛡️ AI Creator PR & Safety Assistant")
-st.markdown("Upload your short-form content for an enterprise-grade policy, safety, and controversy scan.")
+st.title("🛡️ TrustScout.ai")
+st.markdown("Enterprise-grade multimodal policy, safety, and PR scanning.")
 st.markdown("---")
 
 # --- SIDEBAR CONTROL PANEL ---
