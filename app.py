@@ -67,8 +67,7 @@ if run_button:
             vision_content = [
                 {
                     "type": "text",
-                    "text": """You are a strict YouTube Policy Reviewer. I am providing 10 sequential keyframes from a video.
-Review the timeline for visual policy violations (Nudity, Violence, Offensive gestures, Slurs, Brand risks).
+                    "text": """You are a strict YouTube Policy Reviewer. I am providing 5 sequential keyframes from a short-form video. Review the timeline for visual policy violations (Nudity, Violence, Offensive gestures, Slurs, Brand risks).
 
 OUTPUT FORMAT:
 You MUST respond using a strict Markdown table. Do not include any intro or outro paragraphs.
@@ -76,7 +75,6 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
 | :--- | :--- | :--- | :--- |
 """
                 }
-            ]
             ]
             
             for b64_img in base64_frames:
@@ -92,8 +90,7 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             )
         except Exception as e:
             st.error(f"API Error: {e}")
-            st.stop()
-            
+            st.stop()            
         # --- AUDIO EXTRACTION & TRANSCRIPTION ---
         st.info("Extracting audio and transcribing with Whisper...")
         video.audio.write_audiofile("temp_audio.mp3", logger=None)
