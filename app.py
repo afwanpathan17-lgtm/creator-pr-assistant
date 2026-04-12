@@ -4,17 +4,13 @@ from groq import Groq
 import base64
 from io import BytesIO
 from PIL import Image
+from duckduckgo_search import DDGS
 
 # --- THE UI/UX HERO SECTION ---
 st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
 
 # --- CONFIGURATION ---
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-
-trending_controversies = {
-    "SmartPin": "High PR Risk: Major unpatched privacy vulnerability discovered 24 hours ago.",
-    "OpenArt AI": "Medium PR Risk: Facing a class-action lawsuit for copyright infringement."
-}
 
 st.title("🛡️ AI Creator PR & Safety Assistant")
 st.markdown("Upload your short-form content for an enterprise-grade policy, safety, and controversy scan.")
@@ -107,17 +103,50 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             start_time = round(segment['start'], 2)
             full_transcript += f"[{start_time}s]: {segment['text']}\n"
             
-        st.info("Analyzing transcript against policies and PR risks...")
+        # --- THE AGENTIC SEARCH PIPELINE ---
+        st.info("🧠 AI is extracting brands to search the live web...")
+        
+        # Step 1: Ask Llama to find the brands
+        entity_prompt = "Extract a comma-separated list of the main brands, companies, or public figures mentioned in this transcript. Return ONLY the comma-separated list. If none are found, return 'None'."
+        entity_completion = client.chat.completions.create(
+            messages=[{"role": "system", "content": entity_prompt}, {"role": "user", "content": full_transcript}],
+            model="llama-3.1-8b-instant",
+            temperature=0.1,
+        )
+        entities_str = entity_completion.choices[0].message.content.strip()
+        
+        # Step 2: Run the Live Web Search
+        live_news_context = "No recent controversies found."
+        if entities_str.lower() != "none":
+            st.info(f"🌐 Searching live internet for news on: {entities_str}...")
+            live_news_context = ""
+            entities = [e.strip() for e in entities_str.split(",")]
+            
+            for entity in entities:
+                try:
+                    # We search DDG for the top 3 news articles about the brand
+                    results = DDGS().text(f"{entity} controversy news PR", max_results=3)
+                    live_news_context += f"\nLive News for {entity}:\n"
+                    for r in results:
+                        live_news_context += f"- {r['title']}: {r['body']}\n"
+                except Exception as e:
+                    pass # If the search glitches, silently skip
+                    
+        # Step 3: The Final PR Radar
+        st.info("✍️ Writing final PR report using real-time data...")
         radar_prompt = f"""
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
         Analyze the transcript against baseline rules (Profanity, Violence). 
-        Cross-reference any brands mentioned with this database: {trending_controversies}
+        
+        CRITICAL: Cross-reference the transcript with this LIVE BREAKING NEWS pulled from the internet a second ago:
+        {live_news_context}
         
         OUTPUT FORMAT:
         Do not write introductory or concluding paragraphs. Output a professional audit using this exact Markdown structure for every issue found:
         
         * ⏱️ **[Timestamp]** - 🎙️ **Quote:** "[Insert transcript quote]"
         * 🚨 **Risk Level:** [🟢 Low, 🟡 Med, or 🔴 High]
+        * 🌐 **Live Web Context:** [Mention if the live news confirms this is a bad time to post]
         * 🛡️ **Action Required:** [Your PR advice]
         ---
         """
@@ -135,12 +164,7 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             st.error(f"Audio API Error: {e}")
             st.stop()
         
-        # --- THE ENTERPRISE UI/UX DASHBOARD ---
-        st.markdown("---")
-        st.header("📊 Final Moderation Audit")
-        
-        col1, col2 = st.columns(2)
-        
+        # --- THE ENTERPRISE UI/UX DASHBOARD ---        
         with col1:
             st.success("✅ Visual Scan Complete")
             st.subheader("👁️ Visual Report")
