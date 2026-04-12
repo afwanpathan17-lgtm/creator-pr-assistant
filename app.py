@@ -132,7 +132,14 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
                         live_news_context += f"- {r['title']}: {r['body']}\n"
                 except Exception as e:
                     pass # If the search glitches, silently skip
-                    
+
+        # --- THE GROUND TRUTH POLICY PIPELINE ---
+        try:
+            with open("youtube_rules.txt", "r") as f:
+                youtube_rules = f.read()
+        except FileNotFoundError:
+            youtube_rules = "Standard baseline YouTube policies apply."
+            
 # Step 3: The Final PR Radar
         st.info("✍️ Writing final PR report and calculating compliance score...")
         radar_prompt = f"""
