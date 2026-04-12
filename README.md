@@ -60,8 +60,7 @@ graph TD;
 
 **1. Clone the repository:**
 ```bash
-git clone [https://github.com/Afwan-Insights/trustscout-ai.git](https://github.com/Afwan-Insights/trustscout-ai.git)
-cd trustscout-ai
+git clone https://github.com/Afwan-Insights/trustscout-ai.git
 ```
 
 **2. Install dependencies:**
@@ -79,13 +78,5 @@ GROQ_API_KEY = "your_api_key_here"
 ```bash
 streamlit run app.py
 ```
-
----
-
-## 🗺️ Future Product Roadmap
-To scale this tool for enterprise production, the following features are planned for future iterations:
-- [ ] **Multi-Language Moderation:** Expanding Whisper's transcription to audit non-English audio tracks seamlessly.
-- [ ] **Dynamic RAG Uploads:** A drag-and-drop UI component allowing brands to upload their own custom PR guideline PDFs dynamically.
-- [ ] **Trend Analytics:** Integrating Power BI and Python-based data visualizations to track historical compliance scores across entire content libraries.
 
 ---
