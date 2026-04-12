@@ -67,8 +67,16 @@ if run_button:
             vision_content = [
                 {
                     "type": "text",
-                    "text": "You are a strict YouTube Policy Reviewer. I am providing multiple sequential keyframes from a short-form video. Review them as a timeline for any visual policy violations including: 1) Nudity, 2) Graphic violence, 3) Offensive gestures, 4) Slurs or restricted brand names written on screen. Provide a clear, structured report."
+                    "text": """You are a strict YouTube Policy Reviewer. I am providing 10 sequential keyframes from a video.
+Review the timeline for visual policy violations (Nudity, Violence, Offensive gestures, Slurs, Brand risks).
+
+OUTPUT FORMAT:
+You MUST respond using a strict Markdown table. Do not include any intro or outro paragraphs.
+| Frame Sequence | Visual Element Detected | Risk Level (🟢 Low, 🟡 Med, 🔴 High) | Policy Explanation |
+| :--- | :--- | :--- | :--- |
+"""
                 }
+            ]
             ]
             
             for b64_img in base64_frames:
@@ -103,11 +111,18 @@ if run_button:
             full_transcript += f"[{start_time}s]: {segment['text']}\n"
             
         st.info("Analyzing transcript against policies and PR risks...")
-        radar_prompt = f"""
+       radar_prompt = f"""
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
         Analyze the transcript against baseline rules (Profanity, Violence). 
-        Also cross-reference any brands with this database: {trending_controversies}
-        Format your output clearly with timestamps, the Risk Level, and Suggested Actions.
+        Cross-reference any brands mentioned with this database: {trending_controversies}
+        
+        OUTPUT FORMAT:
+        Do not write introductory or concluding paragraphs. Output a professional audit using this exact Markdown structure for every issue found:
+        
+        * ⏱️ **[Timestamp]** - 🎙️ **Quote:** "[Insert transcript quote]"
+        * 🚨 **Risk Level:** [🟢 Low, 🟡 Med, or 🔴 High]
+        * 🛡️ **Action Required:** [Your PR advice]
+        ---
         """
         
         chat_completion = client.chat.completions.create(
