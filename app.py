@@ -261,7 +261,7 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
         pdf.multi_cell(0, 6, text=clean_text(audio_report_clean))
         
         # Generate the PDF file in memory
-        pdf_bytes = pdf.output()
+        pdf_bytes = bytes(pdf.output())
         
         # --- THE STREAMLIT DOWNLOAD BUTTON ---
         st.download_button(
