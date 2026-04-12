@@ -5,6 +5,7 @@ import base64
 from io import BytesIO
 from PIL import Image
 from duckduckgo_search import DDGS
+import re
 
 # --- THE UI/UX HERO SECTION ---
 st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
@@ -132,19 +133,8 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
                 except Exception as e:
                     pass # If the search glitches, silently skip
                     
-        # Step 3: The Final PR Radar
-        st.info("✍️ Writing final PR report using real-time data...")
-        # --- THE GROUND TRUTH POLICY PIPELINE ---
-        st.info("📚 Loading official YouTube safety guidelines...")
-        try:
-            with open("youtube_rules.txt", "r") as f:
-                youtube_rules = f.read()
-        except FileNotFoundError:
-            # A fallback just in case the file goes missing!
-            youtube_rules = "Standard baseline YouTube policies apply."
-
-        # Step 3: The Final PR Radar
-        st.info("✍️ Writing final PR report using real-time data and official rules...")
+# Step 3: The Final PR Radar
+        st.info("✍️ Writing final PR report and calculating compliance score...")
         radar_prompt = f"""
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
         
@@ -155,7 +145,10 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
         {live_news_context}
         
         OUTPUT FORMAT:
-        Do not write introductory or concluding paragraphs. Output a professional audit using this exact Markdown structure for every issue found:
+        You MUST start your response with exactly this line:
+        SCORE: [Calculate a compliance score from 0 to 100. 100 is perfectly safe, 0 is total violation]
+        
+        Then, leave a blank line, and output a professional audit using this exact Markdown structure for every issue found:
         
         * ⏱️ **[Timestamp]** - 🎙️ **Quote:** "[Insert transcript quote]"
         * 🚨 **Risk Level:** [🟢 Low, 🟡 Med, or 🔴 High]
@@ -163,7 +156,8 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
         * 🌐 **Live Web Context:** [Mention if the live news confirms this is a bad time to post, or write 'None']
         * 🛡️ **Action Required:** [Your PR advice]
         ---
-        """        
+        """
+        
         try:
             chat_completion = client.chat.completions.create(
                 messages=[
@@ -176,12 +170,24 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
         except Exception as e:
             st.error(f"Audio API Error: {e}")
             st.stop()
+            
+        # --- PARSE THE SCORE OUT OF THE AI'S TEXT ---
+        raw_audio_report = chat_completion.choices[0].message.content
+        match = re.search(r"SCORE:\s*(\d+)", raw_audio_report)
+        compliance_score = int(match.group(1)) if match else 100 # Grabs the number, defaults to 100 if it fails
+        audio_report_clean = re.sub(r"SCORE:\s*\d+", "", raw_audio_report).strip() # Removes the score from the text
         
-# --- THE ENTERPRISE UI/UX DASHBOARD ---
+        # --- THE ENTERPRISE UI/UX DASHBOARD ---
         st.markdown("---")
         st.header("📊 Final Moderation Audit")
         
-        # THIS IS THE LINE THAT WENT MISSING!
+        # 1. The Compliance Score UI
+        score_color = "🟢" if compliance_score >= 80 else "🟡" if compliance_score >= 50 else "🔴"
+        st.metric(label="Overall Compliance Score", value=f"{score_color} {compliance_score}%")
+        st.progress(compliance_score / 100.0)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # 2. The Side-by-Side Reports
         col1, col2 = st.columns(2)
         
         with col1:
@@ -194,4 +200,16 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             st.success("✅ Audio Scan Complete")
             st.subheader("🔊 Audio & PR Report")
             with st.expander("View Detailed Audio Findings", expanded=True):
-                st.write(chat_completion.choices[0].message.content)
+                st.write(audio_report_clean)
+                
+        # 3. The Export Button
+        st.markdown("---")
+        final_report_text = f"🛡️ FINAL PR & SAFETY AUDIT\n\nCOMPLIANCE SCORE: {compliance_score}%\n\n=== VISUAL REPORT ===\n{vision_completion.choices[0].message.content}\n\n=== AUDIO & PR REPORT ===\n{audio_report_clean}"
+        
+        st.download_button(
+            label="📥 Download Official Audit Report",
+            data=final_report_text,
+            file_name="pr_safety_audit.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
