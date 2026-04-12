@@ -226,13 +226,13 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
                 self.set_font("helvetica", "I", 8)
                 self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
-        # Initialize the PDF
+       # Initialize the PDF
         pdf = PDFReport()
         pdf.add_page()
         
         # PDF fonts can crash if they hit emojis. This safely deletes them completely.
-def clean_text(text):
-    return text.encode('ascii', 'ignore').decode('ascii')
+        def clean_text(text):
+            return text.encode('ascii', 'ignore').decode('ascii')
         
         # Print the Compliance Score (Color Coded!)
         pdf.set_font("helvetica", "B", 14)
