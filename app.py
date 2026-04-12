@@ -134,11 +134,24 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
                     
         # Step 3: The Final PR Radar
         st.info("✍️ Writing final PR report using real-time data...")
+        # --- THE GROUND TRUTH POLICY PIPELINE ---
+        st.info("📚 Loading official YouTube safety guidelines...")
+        try:
+            with open("youtube_rules.txt", "r") as f:
+                youtube_rules = f.read()
+        except FileNotFoundError:
+            # A fallback just in case the file goes missing!
+            youtube_rules = "Standard baseline YouTube policies apply."
+
+        # Step 3: The Final PR Radar
+        st.info("✍️ Writing final PR report using real-time data and official rules...")
         radar_prompt = f"""
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
-        Analyze the transcript against baseline rules (Profanity, Violence). 
         
-        CRITICAL: Cross-reference the transcript with this LIVE BREAKING NEWS pulled from the internet a second ago:
+        CRITICAL RULEBOOK: You MUST grade the transcript strictly against these official guidelines:
+        {youtube_rules}
+        
+        CRITICAL CONTEXT: Cross-reference the transcript with this LIVE BREAKING NEWS pulled from the internet:
         {live_news_context}
         
         OUTPUT FORMAT:
@@ -146,11 +159,11 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
         
         * ⏱️ **[Timestamp]** - 🎙️ **Quote:** "[Insert transcript quote]"
         * 🚨 **Risk Level:** [🟢 Low, 🟡 Med, or 🔴 High]
-        * 🌐 **Live Web Context:** [Mention if the live news confirms this is a bad time to post]
+        * 📖 **Policy Rule Broken:** [Cite the exact rule from the rulebook, or write 'None']
+        * 🌐 **Live Web Context:** [Mention if the live news confirms this is a bad time to post, or write 'None']
         * 🛡️ **Action Required:** [Your PR advice]
         ---
-        """
-        
+        """        
         try:
             chat_completion = client.chat.completions.create(
                 messages=[
