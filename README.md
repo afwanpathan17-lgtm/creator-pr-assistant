@@ -1,40 +1,58 @@
 # 🛡️ TrustScout.ai
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://streamlit.io)
+[![Groq API](https://img.shields.io/badge/Powered%20by-Groq-orange)](https://groq.com)
+
 **Enterprise-Grade Multimodal AI Content Moderation & PR Auditing**
 
-TrustScout.ai is an automated, agentic workflow designed to replace manual content review bottlenecks. It ingests short-form video content and utilizes state-of-the-art vision models, audio transcription, Retrieval-Augmented Generation (RAG), and live web searching to generate strict, policy-compliant PR and safety audits.
+Manual content moderation is a bottleneck, often taking human reviewers up to 15 minutes to fully audit a 60-second video for visual risks, audio violations, and real-time PR context. **TrustScout.ai automates this entire workflow in seconds.** By leveraging state-of-the-art vision models, audio transcription, and a Retrieval-Augmented Generation (RAG) pipeline connected to the live internet, this agentic tool generates strict, policy-compliant PR and safety audits.
 
 ---
 
-## 🚀 The Architecture
-This application moves beyond basic LLM text generation by employing a multi-step, multimodal pipeline:
+## 📊 The Impact & Results
 
-1. **Multimodal Extraction:** - Uses `moviepy` to slice video into sequential visual keyframes and extract isolated audio tracks.
-2. **Vision-Language Processing:** - Feeds keyframes into Meta's **Llama 4 Scout** to scan for visual policy violations (e.g., brand risks, offensive imagery) using strict, formatted Markdown constraints.
-3. **Audio Transcription:** - Utilizes **Whisper Large v3** to convert audio payloads into highly accurate, timestamped transcripts.
-4. **Agentic Live Web Search:** - An LLM entity-extraction layer identifies public figures or brands in the transcript, silently triggers a `duckduckgo-search` query, and pulls breaking internet news to assess real-time PR risks.
-5. **RAG Policy Enforcement:** - Ingests a local `youtube_rules.txt` file as "Ground Truth" to strictly enforce current platform policies without hallucination.
-6. **Enterprise Export:** - Uses RegEx parsing to calculate a mathematical Compliance Score and utilizes `fpdf2` to generate a formatted, downloadable PDF audit report.
+TrustScout.ai doesn't just generate text; it provides actionable, enterprise-ready compliance data. 
 
----
+*(**Portfolio Note:** Drag and drop your awesome dashboard screenshot right here!)*
 
-## 🛠️ Tech Stack
-* **Frontend UI:** Streamlit
-* **AI Inference Engine:** Groq API
-* **Vision Model:** `meta-llama/llama-4-scout-17b-16e-instruct`
-* **Audio Model:** `whisper-large-v3`
-* **Text/Agentic Model:** `llama-3.1-8b-instant`
-* **Data Processing:** Python, MoviePy, PIL (Pillow), RegEx
-* **PDF Generation:** FPDF2
-* **Live Search Tool:** DuckDuckGo Search API
+### Key Deliverables:
+1. **Dynamic Compliance Scoring:** A calculated, color-coded metric (0-100%) grading the overall safety of the content.
+2. **Frame-by-Frame Visual Audit:** Slices video into keyframes and scans for brand risks, gestures, and visual policy violations.
+3. **Agentic PR Context:** Extracts brands mentioned in the audio, searches the live internet for breaking controversies, and warns you *before* you post.
+4. **PDF Export:** Generates a clean, downloadable `PR_Safety_Audit.pdf` for compliance record-keeping.
+
+*(**Portfolio Note:** Drag and drop your PDF export screenshot right here!)*
 
 ---
 
-## 📸 Dashboard Interface
-*(Note: Add a screenshot of your Streamlit Dashboard here!)*
+## 🚀 The Agentic Architecture
 
-* **Real-time Compliance Gauge:** Dynamic scoring based on aggregate transcript and visual analysis.
-* **Side-by-Side Reporting:** Expandable data frames for isolated audio and visual analysis.
-* **One-Click Export:** Seamless PDF report generation for compliance record keeping.
+TrustScout.ai utilizes a multi-step, multimodal pipeline to cross-reference video content against live data and strict text rulebooks.
+
+```mermaid
+graph TD;
+    A[Upload Video] --> B(MoviePy Extraction);
+    B -->|Visual Slices| C[Llama 4 Scout Vision Scan];
+    B -->|Audio Track| D[Whisper Large v3 Transcription];
+    D --> E[Llama 3.1 Entity Extraction];
+    E -->|Search Brands| F{DuckDuckGo Live Web Search};
+    C --> G[RAG Policy Engine];
+    D --> G;
+    F --> G;
+    G -->|Enforce youtube_rules.txt| H[Final Compliance Report & PDF];
+```
+
+---
+## 🛠️ Tech Stack & Capabilities
+
+| Layer | Technology | Function |
+| :--- | :--- | :--- |
+| **Frontend/UI** | `Streamlit` | Enterprise dashboard and interactive data frames. |
+| **Inference Engine** | `Groq API` | Lightning-fast LPU processing for near-instant results. |
+| **Vision Model** | `Llama-4-Scout-17b` | Zero-shot visual policy detection on sequential frames. |
+| **Audio Model** | `Whisper-large-v3` | High-fidelity audio transcription with precise timestamping. |
+| **Live Data** | `duckduckgo-search` | Automated background pipeline for real-time PR controversy checks. |
+| **Export Engine**| `fpdf2` & `RegEx` | Parses LLM output to generate formatted PDF compliance reports. |
 
 ---
 
@@ -42,5 +60,32 @@ This application moves beyond basic LLM text generation by employing a multi-ste
 
 **1. Clone the repository:**
 ```bash
-git clone [https://github.com/yourusername/trustscout-ai.git](https://github.com/yourusername/trustscout-ai.git)
+git clone [https://github.com/Afwan-Insights/trustscout-ai.git](https://github.com/Afwan-Insights/trustscout-ai.git)
 cd trustscout-ai
+```
+
+**2. Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+**3. Configure Credentials:**
+Create a `.streamlit/secrets.toml` file in the root directory and add your Groq API key:
+```toml
+GROQ_API_KEY = "your_api_key_here"
+```
+
+**4. Run the application:**
+```bash
+streamlit run app.py
+```
+
+---
+
+## 🗺️ Future Product Roadmap
+To scale this tool for enterprise production, the following features are planned for future iterations:
+- [ ] **Multi-Language Moderation:** Expanding Whisper's transcription to audit non-English audio tracks seamlessly.
+- [ ] **Dynamic RAG Uploads:** A drag-and-drop UI component allowing brands to upload their own custom PR guideline PDFs dynamically.
+- [ ] **Trend Analytics:** Integrating Power BI and Python-based data visualizations to track historical compliance scores across entire content libraries.
+
+---
