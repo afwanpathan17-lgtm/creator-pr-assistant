@@ -5,19 +5,17 @@ import base64
 from io import BytesIO
 from PIL import Image
 
-# --- CONFIGURATION (THE SECRETS SAFE) ---
-# The app will now look for the key inside Streamlit's secure server settings!
+# --- THE UI/UX HERO SECTION ---
+# This MUST be the first Streamlit command to unlock widescreen!
+st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
+
+# --- CONFIGURATION ---
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# Our live "database"
 trending_controversies = {
     "SmartPin": "High PR Risk: Major unpatched privacy vulnerability discovered 24 hours ago.",
     "OpenArt AI": "Medium PR Risk: Facing a class-action lawsuit for copyright infringement."
 }
-
-# --- THE APP INTERFACE ---
-# --- THE UI/UX HERO SECTION ---
-st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
 
 st.title("🛡️ AI Creator PR & Safety Assistant")
 st.markdown("Upload your short-form content for an enterprise-grade policy, safety, and controversy scan.")
@@ -37,29 +35,25 @@ if run_button:
         st.sidebar.error("⚠️ Please upload a video first!")
         st.stop()
         
-    # Make sure this next line has an indent of exactly 4 spaces!
     with open("temp_video.mp4", "wb") as f:
         f.write(uploaded_file.getbuffer())            
-        # --- THE NEW 60-SECOND GUARDRAIL ---
+        
+        # --- THE 60-SECOND GUARDRAIL ---
         video = VideoFileClip("temp_video.mp4")
         
         if video.duration > 60:
-            st.error("⚠️ Video is too long! To ensure lightning-fast analysis and protect against the 60-second Shorts copyright rule, please upload a clip under 1 minute.")
+            st.error("⚠️ Video is too long! To ensure lightning-fast analysis, please upload a clip under 1 minute.")
             st.stop() 
-        # -----------------------------------
         
-       # --- THE VISUAL SLICER (MULTI-FRAME UPGRADE) ---
-        st.info("Slicing video into multiple keyframes for a deep scan...")
+        # --- THE VISUAL SLICER (10 FRAMES) ---
+        st.info("Slicing video into 10 keyframes for a deep scan...")
         base64_frames = []
         
-        # Calculates 5 evenly spaced timestamps
-        timestamps = [video.duration * (i/6) for i in range(1, 6)]
+        timestamps = [video.duration * (i/11) for i in range(1, 11)]
         
         for t in timestamps:
             frame = video.get_frame(t)
             img = Image.fromarray(frame)
-            
-            # Keep them compressed to 512x512 so we don't break the 4MB payload limit!
             img.thumbnail((512, 512)) 
             
             buffer = BytesIO()
@@ -67,13 +61,9 @@ if run_button:
             base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
             base64_frames.append(base64_str)
             
-        st.success(f"Successfully captured {len(base64_frames)} keyframes!")
-        
-        # --- THE VISION API CALL ---
+        # --- THE VISION API CALL (LLAMA 4 SCOUT) ---
         st.info("Scanning all keyframes for visual policy violations...")
-        
         try:
-            # 1. Start with our text instructions
             vision_content = [
                 {
                     "type": "text",
@@ -81,44 +71,24 @@ if run_button:
                 }
             ]
             
-            # 2. Attach all of our base64 images to the exact same message
             for b64_img in base64_frames:
                 vision_content.append({
                     "type": "image_url",
                     "image_url": {"url": f"data:image/jpeg;base64,{b64_img}"}
                 })
                 
-            # 3. Send the massive package to Llama 4 Scout
             vision_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": vision_content
-                    }
-                ],
+                messages=[{"role": "user", "content": vision_content}],
                 model="meta-llama/llama-4-scout-17b-16e-instruct",
                 temperature=0.1,
             )
-            
-            st.success("Visual Scan Complete!")
-            st.subheader("👁️ Visual Moderation Report")
-            st.write(vision_completion.choices[0].message.content)
-            st.markdown("---")
-            
         except Exception as e:
             st.error(f"API Error: {e}")
             st.stop()
-        # -----------------------------
-        # -----------------------------        # -----------------------------
-        # Adds a nice visual dividing line
-        # -----------------------------
-        # -------------------------
             
-        st.info("Extracting audio...")
-        
+        # --- AUDIO EXTRACTION & TRANSCRIPTION ---
+        st.info("Extracting audio and transcribing with Whisper...")
         video.audio.write_audiofile("temp_audio.mp3", logger=None)
-        
-        st.info("Transcribing video incredibly fast with Groq...")
         
         with open("temp_audio.mp3", "rb") as audio_file:
             transcription = client.audio.translations.create(
@@ -132,8 +102,7 @@ if run_button:
             start_time = round(segment['start'], 2)
             full_transcript += f"[{start_time}s]: {segment['text']}\n"
             
-        st.info("Analyzing transcript against policies and trending controversies...")
-        
+        st.info("Analyzing transcript against policies and PR risks...")
         radar_prompt = f"""
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
         Analyze the transcript against baseline rules (Profanity, Violence). 
@@ -150,6 +119,21 @@ if run_button:
             temperature=0.1, 
         )
         
-        st.success("Scan Complete!")
-        st.subheader("Risk & Controversy Report")
-        st.write(chat_completion.choices[0].message.content)
+        # --- THE ENTERPRISE UI/UX DASHBOARD ---
+        st.markdown("---")
+        st.header("📊 Final Moderation Audit")
+        
+        # Create two side-by-side columns
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.success("✅ Visual Scan Complete")
+            st.subheader("👁️ Visual Report")
+            with st.expander("View Detailed Visual Findings", expanded=True):
+                st.write(vision_completion.choices[0].message.content)
+                
+        with col2:
+            st.success("✅ Audio Scan Complete")
+            st.subheader("🔊 Audio & PR Report")
+            with st.expander("View Detailed Audio Findings", expanded=True):
+                st.write(chat_completion.choices[0].message.content)
