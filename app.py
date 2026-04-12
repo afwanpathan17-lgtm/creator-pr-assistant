@@ -6,6 +6,7 @@ from io import BytesIO
 from PIL import Image
 from duckduckgo_search import DDGS
 import re
+from fpdf import FPDF
 
 # --- THE UI/UX HERO SECTION ---
 st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
@@ -209,14 +210,64 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             with st.expander("View Detailed Audio Findings", expanded=True):
                 st.write(audio_report_clean)
                 
-        # 3. The Export Button
+       # 3. The Export Button (Now a PDF Generator!)
         st.markdown("---")
-        final_report_text = f"🛡️ FINAL PR & SAFETY AUDIT\n\nCOMPLIANCE SCORE: {compliance_score}%\n\n=== VISUAL REPORT ===\n{vision_completion.choices[0].message.content}\n\n=== AUDIO & PR REPORT ===\n{audio_report_clean}"
         
+        # --- DEFINE THE PDF TEMPLATE ---
+        class PDFReport(FPDF):
+            def header(self):
+                self.set_font("helvetica", "B", 16)
+                self.cell(0, 10, "AI Creator PR & Safety Audit", align="C", ln=True)
+                self.line(10, 20, 200, 20)
+                self.ln(10)
+                
+            def footer(self):
+                self.set_y(-15)
+                self.set_font("helvetica", "I", 8)
+                self.cell(0, 10, f"Page {self.page_no()}", align="C")
+
+        # Initialize the PDF
+        pdf = PDFReport()
+        pdf.add_page()
+        
+        # PDF fonts can crash if they hit emojis (🚨, 🛡️). This safely removes them.
+        def clean_text(text):
+            return text.encode('latin-1', 'replace').decode('latin-1')
+        
+        # Print the Compliance Score (Color Coded!)
+        pdf.set_font("helvetica", "B", 14)
+        if compliance_score >= 80:
+            pdf.set_text_color(22, 163, 74)  # Green
+        elif compliance_score >= 50:
+            pdf.set_text_color(202, 138, 4)  # Yellow
+        else:
+            pdf.set_text_color(220, 38, 38)  # Red
+            
+        pdf.cell(0, 10, f"Overall Compliance Score: {compliance_score}%", ln=True)
+        pdf.set_text_color(0, 0, 0) # Reset text to black
+        pdf.ln(5)
+        
+        # Print the Visual Report
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(0, 10, "=== VISUAL REPORT ===", ln=True)
+        pdf.set_font("helvetica", "", 10)
+        pdf.multi_cell(0, 6, text=clean_text(vision_completion.choices[0].message.content))
+        pdf.ln(10)
+        
+        # Print the Audio Report
+        pdf.set_font("helvetica", "B", 12)
+        pdf.cell(0, 10, "=== AUDIO & PR REPORT ===", ln=True)
+        pdf.set_font("helvetica", "", 10)
+        pdf.multi_cell(0, 6, text=clean_text(audio_report_clean))
+        
+        # Generate the PDF file in memory
+        pdf_bytes = pdf.output()
+        
+        # --- THE STREAMLIT DOWNLOAD BUTTON ---
         st.download_button(
-            label="📥 Download Official Audit Report",
-            data=final_report_text,
-            file_name="pr_safety_audit.txt",
-            mime="text/plain",
+            label="📄 Download Professional PDF Report",
+            data=pdf_bytes,
+            file_name="PR_Safety_Audit.pdf",
+            mime="application/pdf",
             use_container_width=True
         )
