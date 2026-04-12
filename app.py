@@ -108,10 +108,10 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             full_transcript += f"[{start_time}s]: {segment['text']}\n"
             
         st.info("Analyzing transcript against policies and PR risks...")
-       radar_prompt = f"""
+       radar_prompt = f"
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
         Analyze the transcript against baseline rules (Profanity, Violence). 
-        Cross-reference any brands mentioned with this database: {trending_controversies}
+        Cross-reference any brands mentioned with this database: {trending_controversies}"
         
         OUTPUT FORMAT:
         Do not write introductory or concluding paragraphs. Output a professional audit using this exact Markdown structure for every issue found:
