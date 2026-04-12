@@ -1,3 +1,4 @@
+
 # 🛡️ TrustScout.ai
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://streamlit.io)
@@ -6,6 +7,8 @@
 **Enterprise-Grade Multimodal AI Content Moderation & PR Auditing**
 
 Manual content moderation is a bottleneck, often taking human reviewers up to 15 minutes to fully audit a 60-second video for visual risks, audio violations, and real-time PR context. **TrustScout.ai automates this entire workflow in seconds.** By leveraging state-of-the-art vision models, audio transcription, and a Retrieval-Augmented Generation (RAG) pipeline connected to the live internet, this agentic tool generates strict, policy-compliant PR and safety audits.
+<img width="1717" height="871" alt="Initiating" src="https://github.com/user-attachments/assets/18aaecc6-1f9e-4d9d-8cbb-883b280250a2" />
+
 
 ---
 
@@ -13,7 +16,8 @@ Manual content moderation is a bottleneck, often taking human reviewers up to 15
 
 TrustScout.ai doesn't just generate text; it provides actionable, enterprise-ready compliance data. 
 
-*(**Portfolio Note:** Drag and drop your awesome dashboard screenshot right here!)*
+<img width="1762" height="867" alt="Results" src="https://github.com/user-attachments/assets/64601f00-2df7-4b0d-ad52-5f6cdd4db97f" />
+
 
 ### Key Deliverables:
 1. **Dynamic Compliance Scoring:** A calculated, color-coded metric (0-100%) grading the overall safety of the content.
@@ -21,7 +25,8 @@ TrustScout.ai doesn't just generate text; it provides actionable, enterprise-rea
 3. **Agentic PR Context:** Extracts brands mentioned in the audio, searches the live internet for breaking controversies, and warns you *before* you post.
 4. **PDF Export:** Generates a clean, downloadable `PR_Safety_Audit.pdf` for compliance record-keeping.
 
-*(**Portfolio Note:** Drag and drop your PDF export screenshot right here!)*
+<img width="991" height="801" alt="PDF REPORT" src="https://github.com/user-attachments/assets/946864d4-dc49-47b2-b5e1-8e313079df2b" />
+
 
 ---
 
