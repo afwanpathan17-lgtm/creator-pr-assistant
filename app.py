@@ -6,7 +6,6 @@ from io import BytesIO
 from PIL import Image
 
 # --- THE UI/UX HERO SECTION ---
-# This MUST be the first Streamlit command to unlock widescreen!
 st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
 
 # --- CONFIGURATION ---
@@ -45,7 +44,7 @@ if run_button:
             st.error("⚠️ Video is too long! To ensure lightning-fast analysis, please upload a clip under 1 minute.")
             st.stop() 
         
-# --- THE VISUAL SLICER (5 FRAMES) ---
+        # --- THE VISUAL SLICER (5 FRAMES) ---
         st.info("Slicing video into 5 keyframes for a deep scan...")
         base64_frames = []
         
@@ -67,7 +66,7 @@ if run_button:
             vision_content = [
                 {
                     "type": "text",
-                    "text": """You are a strict YouTube Policy Reviewer. I am providing 5 sequential keyframes from a short-form video. Review the timeline for visual policy violations (Nudity, Violence, Offensive gestures, Slurs, Brand risks).
+                    "text": """You are a strict YouTube Policy Reviewer. I am providing 5 sequential keyframes from a video. Review the timeline for visual policy violations (Nudity, Violence, Offensive gestures, Slurs, Brand risks).
 
 OUTPUT FORMAT:
 You MUST respond using a strict Markdown table. Do not include any intro or outro paragraphs.
@@ -89,8 +88,9 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
                 temperature=0.1,
             )
         except Exception as e:
-            st.error(f"API Error: {e}")
-            st.stop()            
+            st.error(f"Visual API Error: {e}")
+            st.stop()
+            
         # --- AUDIO EXTRACTION & TRANSCRIPTION ---
         st.info("Extracting audio and transcribing with Whisper...")
         video.audio.write_audiofile("temp_audio.mp3", logger=None)
@@ -108,10 +108,10 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
             full_transcript += f"[{start_time}s]: {segment['text']}\n"
             
         st.info("Analyzing transcript against policies and PR risks...")
-       radar_prompt = f"
+        radar_prompt = f"""
         You are a strict YouTube Policy Reviewer AND a high-level PR Manager.
         Analyze the transcript against baseline rules (Profanity, Violence). 
-        Cross-reference any brands mentioned with this database: {trending_controversies}"
+        Cross-reference any brands mentioned with this database: {trending_controversies}
         
         OUTPUT FORMAT:
         Do not write introductory or concluding paragraphs. Output a professional audit using this exact Markdown structure for every issue found:
@@ -122,20 +122,23 @@ You MUST respond using a strict Markdown table. Do not include any intro or outr
         ---
         """
         
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": radar_prompt},
-                {"role": "user", "content": f"Here is the transcript:\n\n{full_transcript}"}
-            ],
-            model="llama-3.1-8b-instant",
-            temperature=0.1, 
-        )
+        try:
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": radar_prompt},
+                    {"role": "user", "content": f"Here is the transcript:\n\n{full_transcript}"}
+                ],
+                model="llama-3.1-8b-instant",
+                temperature=0.1, 
+            )
+        except Exception as e:
+            st.error(f"Audio API Error: {e}")
+            st.stop()
         
         # --- THE ENTERPRISE UI/UX DASHBOARD ---
         st.markdown("---")
         st.header("📊 Final Moderation Audit")
         
-        # Create two side-by-side columns
         col1, col2 = st.columns(2)
         
         with col1:
