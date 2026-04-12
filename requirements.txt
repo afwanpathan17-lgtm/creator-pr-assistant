@@ -2,3 +2,4 @@ moviepy==1.0.3
 groq
 Pillow
 duckduckgo-search==6.3.2
+fpdf2==2.7.9
