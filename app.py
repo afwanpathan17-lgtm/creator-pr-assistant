@@ -16,8 +16,33 @@ trending_controversies = {
 }
 
 # --- THE APP INTERFACE ---
-st.title("🛡️ Creator PR & Policy Assistant")
-st.write("Upload a draft video to scan for YouTube policy violations and real-world PR risks.")
+# --- THE UI/UX HERO SECTION ---
+# This MUST be the very first Streamlit command! It unlocks widescreen.
+st.set_page_config(page_title="Creator PR Assistant", page_icon="🛡️", layout="wide")
+
+st.title("🛡️ AI Creator PR & Safety Assistant")
+st.markdown("Upload your short-form content for an enterprise-grade policy, safety, and controversy scan.")
+st.markdown("---")
+
+# --- SIDEBAR CONTROL PANEL ---
+with st.sidebar:
+    st.header("⚙️ Control Panel")
+    st.info("Upload your video below to begin the deep scan. Max length: 60 seconds.")
+    
+    uploaded_file = st.file_uploader("Drop Video Here", type=["mp4", "mov"])
+    
+    # We moved the button into the sidebar and made it span the full width!
+    run_button = st.button("🚀 Run Full Scan", use_container_width=True)
+
+# --- THE MAIN SCAN ENGINE ---
+# We use the new sidebar button to trigger the app
+if run_button:
+    if uploaded_file is None:
+        st.sidebar.error("⚠️ Please upload a video first!")
+        st.stop()
+        
+    # The rest of your existing code stays exactly the same, right below here!
+    with open("temp_video.mp4", "wb") as f:
 
 uploaded_file = st.file_uploader("Choose an MP4 video", type=["mp4"])
 
