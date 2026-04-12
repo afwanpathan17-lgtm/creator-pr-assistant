@@ -45,11 +45,11 @@ if run_button:
             st.error("⚠️ Video is too long! To ensure lightning-fast analysis, please upload a clip under 1 minute.")
             st.stop() 
         
-        # --- THE VISUAL SLICER (10 FRAMES) ---
-        st.info("Slicing video into 10 keyframes for a deep scan...")
+# --- THE VISUAL SLICER (5 FRAMES) ---
+        st.info("Slicing video into 5 keyframes for a deep scan...")
         base64_frames = []
         
-        timestamps = [video.duration * (i/11) for i in range(1, 11)]
+        timestamps = [video.duration * (i/6) for i in range(1, 6)]
         
         for t in timestamps:
             frame = video.get_frame(t)
