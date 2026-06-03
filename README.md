@@ -1,7 +1,7 @@
 
 # 🛡️ TrustScout.ai
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://streamlit.io)
+[TrustScout.ai](https://creator-pr-assistant-rbgjsud5k8fdgjappgrbpwj.streamlit.app/)
 [![Groq API](https://img.shields.io/badge/Powered%20by-Groq-orange)](https://groq.com)
 
 **Enterprise-Grade Multimodal AI Content Moderation & PR Auditing**
